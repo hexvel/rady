@@ -3,6 +3,7 @@ package parser;
 import parser.ast.BinaryExpression;
 import parser.ast.Expression;
 import parser.ast.NumberExpression;
+import parser.ast.UnaryExpression;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,10 +70,9 @@ public class Parser {
     }
 
     private Expression Unary() {
-//        final Token current = Get(0);
-//        if (Match(TokenType.NUMBER)) {
-//            return new NumberExpression(Double.parseDouble(current.getText()));
-//        }
+        if (Match(TokenType.NUMBER)) {
+            return new UnaryExpression('-', Primary());
+        }
         return Primary();
     }
 
