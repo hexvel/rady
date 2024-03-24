@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lexer {
-    private static final String OPERATOR_CHARS = "+-*/";
+    private static final String OPERATOR_CHARS = "+-*/()";
     private static final TokenType[] OPERATOR_TOKENS = {
-        TokenType.PLUS, TokenType.MINUS,
-        TokenType.STAR, TokenType.SLASH
+            TokenType.PLUS, TokenType.MINUS,
+            TokenType.STAR, TokenType.SLASH,
+            TokenType.LBRACKET, TokenType.RBRACKET
     };
 
     private final String input;
@@ -24,10 +25,10 @@ public class Lexer {
     public List<Token> Tokenize() {
         while (pos < length) {
             final char current = Peek(0);
-            if (Character.isDigit(current)) {
-                TokenizeNumber();
-            } else if (OPERATOR_CHARS.indexOf(current) != -1) {
-             TokenizeOperator();
+            if (Character.isDigit(current)) TokenizeNumber();
+            else if (Character.isLetter(current)) TokenizeWord();
+            else if (OPERATOR_CHARS.indexOf(current) != -1) {
+                TokenizeOperator();
             } else {
                 Next();
             }
@@ -42,10 +43,28 @@ public class Lexer {
         Next();
     }
 
+    private void TokenizeWord() {
+        final StringBuilder buffer = new StringBuilder();
+        char current = Peek(0);
+
+        while (Character.isLetterOrDigit(current) || (current == '_') || (current == '$')) {
+            buffer.append(current);
+            current = Next();
+        }
+        addToken(TokenType.WORD, buffer.toString());
+    }
+
     private void TokenizeNumber() {
         final StringBuilder buffer = new StringBuilder();
         char current = Peek(0);
-        while (Character.isDigit(current)) {
+
+        while (true) {
+            if (current == '.') {
+                if (buffer.indexOf(".") != -1) throw new RuntimeException("Invalid float number");
+            } else if (!Character.isDigit(current)) {
+                break;
+            }
+
             buffer.append(current);
             current = Next();
         }

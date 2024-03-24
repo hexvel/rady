@@ -7,7 +7,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        final String input = "2 + 2 * 2";
+        final String input = "E";
         final List<Token> tokens = new Lexer(input).Tokenize();
 
         final List<Expression> expressions = new Parser(tokens).Parse();

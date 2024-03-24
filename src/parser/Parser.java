@@ -1,9 +1,6 @@
 package parser;
 
-import parser.ast.BinaryExpression;
-import parser.ast.Expression;
-import parser.ast.NumberExpression;
-import parser.ast.UnaryExpression;
+import parser.ast.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +17,14 @@ public class Parser {
         size = tokens.size();
     }
 
-     public List<Expression> Parse() {
+    public List<Expression> Parse() {
         final List<Expression> result = new ArrayList<>();
-         while (!Match(TokenType.EOF)) {
-             result.add(expression());
-         }
+        while (!Match(TokenType.EOF)) {
+            result.add(expression());
+        }
 
         return result;
-     }
+    }
 
     private Expression expression() {
         return Additive();
@@ -70,7 +67,7 @@ public class Parser {
     }
 
     private Expression Unary() {
-        if (Match(TokenType.NUMBER)) {
+        if (Match(TokenType.MINUS)) {
             return new UnaryExpression('-', Primary());
         }
         return Primary();
@@ -80,6 +77,14 @@ public class Parser {
         final Token current = Get(0);
         if (Match(TokenType.NUMBER)) {
             return new NumberExpression(Double.parseDouble(current.getText()));
+        }
+        if (Match(TokenType.WORD)) {
+            return new ConstantExpression(current.getText());
+        }
+        if (Match(TokenType.LBRACKET)) {
+            Expression result = expression();
+            Match(TokenType.RBRACKET);
+            return result;
         }
         throw new RuntimeException("Unknown expression");
     }
@@ -92,11 +97,11 @@ public class Parser {
         return true;
     }
 
-     private Token Get(int relativePosition) {
-         final int position = pos + relativePosition;
-         if (position >= size) {
-             return EOF;
-         }
-         return tokens.get(position);
-     }
+    private Token Get(int relativePosition) {
+        final int position = pos + relativePosition;
+        if (position >= size) {
+            return EOF;
+        }
+        return tokens.get(position);
+    }
 }
