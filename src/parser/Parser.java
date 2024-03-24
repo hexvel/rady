@@ -27,6 +27,9 @@ public class Parser {
     }
 
     private Statement statement() {
+        if (match(TokenType.PRINT)) {
+            return new PrintStatement(expression());
+        }
         return assignmentStatement();
     }
 
@@ -92,10 +95,13 @@ public class Parser {
     private Expression primary() {
         final Token current = get(0);
         if (match(TokenType.NUMBER)) {
-            return new NumberExpression(Double.parseDouble(current.getText()));
+            return new ValueExpression(Double.parseDouble(current.getText()));
         }
         if (match(TokenType.WORD)) {
             return new VariableExpression(current.getText());
+        }
+        if (match(TokenType.STRING)) {
+            return new ValueExpression(current.getText());
         }
         if (match(TokenType.LBRACKET)) {
             Expression result = expression();

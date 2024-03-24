@@ -28,6 +28,7 @@ public class Lexer {
             final char current = peek(0);
             if (Character.isDigit(current)) tokenizeNumber();
             else if (Character.isLetter(current)) tokenizeWord();
+            else if (current == '"') tokenizeString();
             else if (OPERATOR_CHARS.indexOf(current) != -1) {
                 tokenizeOperator();
             } else {
@@ -52,7 +53,51 @@ public class Lexer {
             buffer.append(current);
             current = next();
         }
-        addToken(TokenType.WORD, buffer.toString());
+
+        String string = buffer.toString();
+        if (string.equals("print")) {
+            addToken(TokenType.PRINT);
+        } else {
+            addToken(TokenType.WORD, string);
+        }
+    }
+
+    private void tokenizeString() {
+        next(); // skip '"'
+        final StringBuilder buffer = new StringBuilder();
+        char current = peek(0);
+
+        while (true) {
+            if (current == '\\') {
+                current = next();
+                switch (current) {
+                    case '"' -> {
+                        current = next();
+                        buffer.append('"');
+                        continue;
+                    }
+                    case 'n' -> {
+                        current = next();
+                        buffer.append('\n');
+                        continue;
+                    }
+                    case 't' -> {
+                        current = next();
+                        buffer.append('\t');
+                        continue;
+                    }
+                }
+                buffer.append('\\');
+                continue;
+            }
+
+            if (current == '"') break;
+            buffer.append(current);
+            current = next();
+        }
+
+        next(); // skip closing '"'
+        addToken(TokenType.STRING, buffer.toString());
     }
 
     private void tokenizeNumber() {

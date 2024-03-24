@@ -8,7 +8,9 @@ public enum TokenType {
     STAR,
     SLASH,
     EQUAL,
+    PRINT,
     LBRACKET,
     RBRACKET,
-    EOF
+    EOF,
+    STRING
 }
