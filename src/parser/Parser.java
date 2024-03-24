@@ -1,10 +1,21 @@
 package parser;
 
-import parser.ast.*;
-
-import javax.swing.plaf.nimbus.State;
-import java.util.ArrayList;
 import java.util.List;
+
+import parser.ast.AssignmentStatement;
+import parser.ast.BinaryExpression;
+import parser.ast.BlockStatement;
+import parser.ast.BreakStatement;
+import parser.ast.ConditionalExpression;
+import parser.ast.Expression;
+import parser.ast.ForStatement;
+import parser.ast.IfStatement;
+import parser.ast.PrintStatement;
+import parser.ast.Statement;
+import parser.ast.UnaryExpression;
+import parser.ast.ValueExpression;
+import parser.ast.VariableExpression;
+import parser.ast.WhileStatement;
 
 public class Parser {
     private static final Token EOF = new Token(TokenType.EOF, "");
@@ -38,7 +49,8 @@ public class Parser {
     }
 
     private Statement statementOrBlock() {
-        if (get(0).getType() == TokenType.LBRACE) return block();
+        if (get(0).getType() == TokenType.LBRACE)
+            return block();
         return statement();
     }
 
@@ -48,6 +60,15 @@ public class Parser {
         }
         if (match(TokenType.IF)) {
             return conditionalKeywords();
+        }
+        if (match(TokenType.WHILE)) {
+            return whileStatement();
+        }
+        if (match(TokenType.FOR)) {
+            return forStatement();
+        }
+        if (match(TokenType.BREAK)) {
+            return new BreakStatement();
         }
         return assignmentStatement();
     }
@@ -78,28 +99,78 @@ public class Parser {
         return new IfStatement(condition, ifStatement, elseStatement);
     }
 
+    private Statement whileStatement() {
+        final Expression condition = expression();
+        final Statement statement = statementOrBlock();
+        return new WhileStatement(condition, statement);
+    }
+
+    private Statement forStatement() {
+        final Statement initialize = assignmentStatement();
+        consume(TokenType.SEMICOLON);
+        final Expression termination = expression();
+        consume(TokenType.SEMICOLON);
+        final Statement increment = assignmentStatement();
+        final Statement statement = statementOrBlock();
+        return new ForStatement(initialize, termination, increment, statement);
+    }
+
     private Expression expression() {
-        return conditional();
+        return logicalOr();
+    }
+
+    private Expression logicalOr() {
+        Expression result = logicalAnd();
+
+        while (true) {
+            if (match(TokenType.DOUBLE_BAR)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.OR, result, logicalAnd());
+                continue;
+            }
+            break;
+        }
+
+        return result;
+    }
+
+    private Expression logicalAnd() {
+        Expression result = equality();
+
+        while (true) {
+            if (match(TokenType.DOUBLE_AMP)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.AND, result, equality());
+                continue;
+            }
+            break;
+        }
+
+        return result;
+    }
+
+    private Expression equality() {
+        Expression result = conditional();
+
+        if (match(TokenType.DOUBLE_EQUAL)) {
+            return new ConditionalExpression(ConditionalExpression.Operator.EQUAL, result, conditional());
+        }
+
+        if (match(TokenType.EXCL_EQUAL)) {
+            return new ConditionalExpression(ConditionalExpression.Operator.NOT_EQUAL, result, conditional());
+        }
+
+        return result;
     }
 
     private Expression conditional() {
         Expression result = additive();
 
         while (true) {
-            if (match(TokenType.DOUBLE_EQUAL)) {
-                result = new ConditionalExpression(ConditionalExpression.Operator.EQUAL, result, additive());
-                continue;
-            }
             if (match(TokenType.LT)) {
                 result = new ConditionalExpression(ConditionalExpression.Operator.LT, result, additive());
                 continue;
             }
             if (match(TokenType.GT)) {
                 result = new ConditionalExpression(ConditionalExpression.Operator.GT, result, additive());
-                continue;
-            }
-            if (match(TokenType.EXCL_EQUAL)) {
-                result = new ConditionalExpression(ConditionalExpression.Operator.NOT_EQUAL, result, additive());
                 continue;
             }
             if (match(TokenType.LTEQ)) {
@@ -180,13 +251,15 @@ public class Parser {
 
     private void consume(TokenType type) {
         final Token current = get(0);
-        if (type != current.getType()) throw new RuntimeException("Token" + current + " doesn't math " + type);
+        if (type != current.getType())
+            throw new RuntimeException("Token" + current + " doesn't math " + type);
         pos++;
     }
 
     private boolean match(TokenType type) {
         final Token current = get(0);
-        if (type != current.getType()) return false;
+        if (type != current.getType())
+            return false;
 
         pos++;
         return true;

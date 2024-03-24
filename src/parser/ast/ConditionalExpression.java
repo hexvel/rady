@@ -6,11 +6,6 @@ import lib.Value;
 
 public class ConditionalExpression implements Expression {
     public static enum Operator {
-        PLUS("+"),
-        MINUS("-"),
-        MULTIPLY("*"),
-        DIVIDE("/"),
-
         EQUAL("=="),
         NOT_EQUAL("!="),
 
@@ -59,36 +54,25 @@ public class ConditionalExpression implements Expression {
             secondNumber = secondValue.asDouble();
         }
 
-        boolean result;
-        switch (operation) {
-            case LT -> {
-                result = firstNumber < secondNumber;
-            }
-            case GT -> {
-                result = firstNumber > secondNumber;
-            }
-            case LTEQ -> {
-                result = firstNumber <= secondNumber;
-            }
-            case GTEQ -> {
-                result = firstNumber >= secondNumber;
-            }
-            case EQUAL -> {
-                result = firstNumber == secondNumber;
-            }
-            case NOT_EQUAL -> {
-                result = firstNumber != secondNumber;
-            }
-            case AND -> {
-                result = firstNumber != 0 && secondNumber != 0;
-            }
-            case OR -> {
-                result = firstNumber != 0 || secondNumber != 0;
-            }
-            default -> throw new RuntimeException("Unknown operator");
-        }
+        boolean result = isaBoolean(firstNumber, secondNumber);
 
         return new NumberValue(result);
+    }
+
+    private boolean isaBoolean(double firstNumber, double secondNumber) {
+        boolean result;
+        switch (operation) {
+            case LT -> result = firstNumber < secondNumber;
+            case GT -> result = firstNumber > secondNumber;
+            case LTEQ -> result = firstNumber <= secondNumber;
+            case GTEQ -> result = firstNumber >= secondNumber;
+            case EQUAL -> result = firstNumber == secondNumber;
+            case NOT_EQUAL -> result = firstNumber != secondNumber;
+            case AND -> result = firstNumber != 0 && secondNumber != 0;
+            case OR -> result = firstNumber != 0 || secondNumber != 0;
+            default -> throw new RuntimeException("Unknown operator");
+        }
+        return result;
     }
 
     @Override

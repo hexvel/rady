@@ -4,6 +4,12 @@ public enum TokenType {
     NUMBER,
     WORD,
 
+    WHILE,
+    FOR,
+    DO,
+    BREAK,
+    CONTINUE,
+
     PLUS,
     MINUS,
     STAR,
@@ -22,6 +28,7 @@ public enum TokenType {
 
     EOF,
     STRING,
+    SEMICOLON,
 
     IF,
     ELSE,

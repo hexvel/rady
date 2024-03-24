@@ -3,11 +3,11 @@ package parser.ast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockStatement implements Statement{
+public class BlockStatement implements Statement {
     private final List<Statement> statements; // <Statement>
 
     public BlockStatement() {
-        this.statements = new ArrayList<>();
+        statements = new ArrayList<>();
     }
 
     public void add(Statement statement) {

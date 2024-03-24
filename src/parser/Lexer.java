@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Lexer {
-    private static final String OPERATOR_CHARS = "+-*/()=<>!&|";
+    private static final String OPERATOR_CHARS = "+-*/()=<>!&|;";
 
     private static final Map<String, TokenType> OPERATORS;
     static {
@@ -22,6 +22,7 @@ public class Lexer {
         OPERATORS.put("=", TokenType.EQUAL);
         OPERATORS.put("<", TokenType.LT);
         OPERATORS.put(">", TokenType.GT);
+        OPERATORS.put(";", TokenType.SEMICOLON);
 
         OPERATORS.put("!", TokenType.EXCL);
         OPERATORS.put("&", TokenType.AMP);
@@ -51,9 +52,12 @@ public class Lexer {
     public List<Token> tokenize() {
         while (pos < length) {
             final char current = peek(0);
-            if (Character.isDigit(current)) tokenizeNumber();
-            else if (Character.isLetter(current)) tokenizeWord();
-            else if (current == '"') tokenizeString();
+            if (Character.isDigit(current))
+                tokenizeNumber();
+            else if (Character.isLetter(current))
+                tokenizeWord();
+            else if (current == '"')
+                tokenizeString();
             else if (OPERATOR_CHARS.indexOf(current) != -1) {
                 tokenizeOperator();
             } else {
@@ -102,7 +106,8 @@ public class Lexer {
     private void tokenizeBlockComments() {
         char current = peek(0);
         do {
-            if (current == '\0') throw new RuntimeException("Unterminated block comment");
+            if (current == '\0')
+                throw new RuntimeException("Unterminated block comment");
             current = next();
         } while (current != '*' || peek(1) != '/');
 
@@ -123,21 +128,39 @@ public class Lexer {
         switch (string) {
             case "print" -> {
                 addToken(TokenType.PRINT);
+                break;
             }
             case "if" -> {
                 addToken(TokenType.IF);
+                break;
             }
             case "else" -> {
                 addToken(TokenType.ELSE);
+                break;
             }
-//            case "while" -> {
-//                addToken(TokenType.WHILE);
-//            }
-//            case "for" -> {
-//                addToken(TokenType.FOR);
-//            }
+            case "while" -> {
+                addToken(TokenType.WHILE);
+                break;
+            }
+            case "for" -> {
+                addToken(TokenType.FOR);
+                break;
+            }
+            case "do" -> {
+                addToken(TokenType.DO);
+                break;
+            }
+            case "break" -> {
+                addToken(TokenType.BREAK);
+                break;
+            }
+            case "continue" -> {
+                addToken(TokenType.CONTINUE);
+                break;
+            }
             default -> {
                 addToken(TokenType.WORD, string);
+                break;
             }
         }
     }
@@ -171,7 +194,8 @@ public class Lexer {
                 continue;
             }
 
-            if (current == '"') break;
+            if (current == '"')
+                break;
             buffer.append(current);
             current = next();
         }
@@ -186,7 +210,8 @@ public class Lexer {
 
         while (true) {
             if (current == '.') {
-                if (buffer.indexOf(".") != -1) throw new RuntimeException("Invalid float number");
+                if (buffer.indexOf(".") != -1)
+                    throw new RuntimeException("Invalid float number");
             } else if (!Character.isDigit(current)) {
                 break;
             }
