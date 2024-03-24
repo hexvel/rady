@@ -1,16 +1,39 @@
 package parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Lexer {
     private static final String OPERATOR_CHARS = "+-*/()=<>";
-    private static final TokenType[] OPERATOR_TOKENS = {
-            TokenType.PLUS, TokenType.MINUS,
-            TokenType.STAR, TokenType.SLASH,
-            TokenType.LBRACKET, TokenType.RBRACKET,
-            TokenType.EQUAL, TokenType.LT, TokenType.GT
-    };
+
+    private static final Map<String, TokenType> OPERATORS;
+    static {
+        OPERATORS = new HashMap<>();
+        OPERATORS.put("+", TokenType.PLUS);
+        OPERATORS.put("-", TokenType.MINUS);
+        OPERATORS.put("*", TokenType.STAR);
+        OPERATORS.put("/", TokenType.SLASH);
+        OPERATORS.put("(", TokenType.LBRACKET);
+        OPERATORS.put(")", TokenType.RBRACKET);
+        OPERATORS.put("=", TokenType.EQUAL);
+        OPERATORS.put("<", TokenType.LT);
+        OPERATORS.put(">", TokenType.GT);
+
+        OPERATORS.put("!", TokenType.EXCL);
+        OPERATORS.put("&", TokenType.AMP);
+        OPERATORS.put("|", TokenType.BAR);
+
+        OPERATORS.put("==", TokenType.DOUBLE_EQUAL);
+        OPERATORS.put("!=", TokenType.EXCL_EQUAL);
+        OPERATORS.put(">=", TokenType.LTEQ);
+        OPERATORS.put("<=", TokenType.GTEQ);
+
+        OPERATORS.put("&&", TokenType.DOUBLE_AMP);
+        OPERATORS.put("||", TokenType.DOUBLE_BAR);
+
+    }
 
     private final String input;
     private final int length;
@@ -40,8 +63,48 @@ public class Lexer {
     }
 
     private void tokenizeOperator() {
-        final int position = OPERATOR_CHARS.indexOf(peek(0));
-        addToken(OPERATOR_TOKENS[position]);
+        char current = peek(0);
+        if (current == '/') {
+            if (peek(1) == '/') {
+                next();
+                next();
+                tokenizeComments();
+                return;
+            } else if (peek(1) == '*') {
+                next();
+                next();
+                tokenizeBlockComments();
+                return;
+            }
+        }
+
+        final StringBuilder buffer = new StringBuilder();
+        while (true) {
+            final String text = buffer.toString();
+            if (!OPERATORS.containsKey(text + current) && !text.isEmpty()) {
+                addToken(OPERATORS.get(text));
+                return;
+            }
+            buffer.append(current);
+            current = next();
+        }
+    }
+
+    private void tokenizeComments() {
+        char current = peek(0);
+        while ("\r\n\0".indexOf(current) == -1) {
+            current = next();
+        }
+    }
+
+    private void tokenizeBlockComments() {
+        char current = peek(0);
+        do {
+            if (current == '\0') throw new RuntimeException("Unterminated block comment");
+            current = next();
+        } while (current != '*' || peek(1) != '/');
+
+        next();
         next();
     }
 
