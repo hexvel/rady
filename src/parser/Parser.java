@@ -2,6 +2,7 @@ package parser;
 
 import parser.ast.*;
 
+import javax.swing.plaf.nimbus.State;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,13 +18,28 @@ public class Parser {
         size = tokens.size();
     }
 
-    public List<Statement> parse() {
-        final List<Statement> result = new ArrayList<>();
+    public Statement parse() {
+        final BlockStatement result = new BlockStatement();
         while (!match(TokenType.EOF)) {
             result.add(statement());
         }
 
         return result;
+    }
+
+    private Statement block() {
+        final BlockStatement blockStatement = new BlockStatement();
+        consume(TokenType.LBRACE);
+        while (!match(TokenType.RBRACE)) {
+            blockStatement.add(statement());
+        }
+
+        return blockStatement;
+    }
+
+    private Statement statementOrBlock() {
+        if (get(0).getType() == TokenType.LBRACE) return block();
+        return statement();
     }
 
     private Statement statement() {
@@ -50,11 +66,11 @@ public class Parser {
 
     private Statement conditionalKeywords() {
         final Expression condition = expression();
-        final Statement ifStatement = statement();
+        final Statement ifStatement = statementOrBlock();
         final Statement elseStatement;
 
         if (match(TokenType.ELSE)) {
-            elseStatement = statement();
+            elseStatement = statementOrBlock();
         } else {
             elseStatement = null;
         }
@@ -70,16 +86,28 @@ public class Parser {
         Expression result = additive();
 
         while (true) {
-            if (match(TokenType.EQUAL)) {
-                result = new ConditionalExpression('=', result, additive());
+            if (match(TokenType.DOUBLE_EQUAL)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.EQUAL, result, additive());
                 continue;
             }
             if (match(TokenType.LT)) {
-                result = new ConditionalExpression('<', result, additive());
+                result = new ConditionalExpression(ConditionalExpression.Operator.LT, result, additive());
                 continue;
             }
             if (match(TokenType.GT)) {
-                result = new ConditionalExpression('>', result, additive());
+                result = new ConditionalExpression(ConditionalExpression.Operator.GT, result, additive());
+                continue;
+            }
+            if (match(TokenType.EXCL_EQUAL)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.NOT_EQUAL, result, additive());
+                continue;
+            }
+            if (match(TokenType.LTEQ)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.LTEQ, result, additive());
+                continue;
+            }
+            if (match(TokenType.GTEQ)) {
+                result = new ConditionalExpression(ConditionalExpression.Operator.GTEQ, result, additive());
                 continue;
             }
             break;
