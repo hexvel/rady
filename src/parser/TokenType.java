@@ -7,6 +7,7 @@ public enum TokenType {
     MINUS,
     STAR,
     SLASH,
+    EQUAL,
     LBRACKET,
     RBRACKET,
     EOF

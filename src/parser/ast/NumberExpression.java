@@ -8,7 +8,7 @@ public class NumberExpression implements Expression {
     }
 
     @Override
-    public double Eval() {
+    public double eval() {
         return value;
     }
 

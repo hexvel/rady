@@ -10,10 +10,10 @@ public class UnaryExpression implements Expression {
     }
 
     @Override
-    public double Eval() {
+    public double eval() {
         return switch (operation) {
-            case '-' -> -expr.Eval();
-            default -> expr.Eval();
+            case '-' -> -expr.eval();
+            default -> expr.eval();
         };
     }
 

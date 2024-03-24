@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lexer {
-    private static final String OPERATOR_CHARS = "+-*/()";
+    private static final String OPERATOR_CHARS = "+-*/()=";
     private static final TokenType[] OPERATOR_TOKENS = {
             TokenType.PLUS, TokenType.MINUS,
             TokenType.STAR, TokenType.SLASH,
-            TokenType.LBRACKET, TokenType.RBRACKET
+            TokenType.LBRACKET, TokenType.RBRACKET,
+            TokenType.EQUAL
     };
 
     private final String input;
@@ -22,41 +23,41 @@ public class Lexer {
         tokens = new ArrayList<>();
     }
 
-    public List<Token> Tokenize() {
+    public List<Token> tokenize() {
         while (pos < length) {
-            final char current = Peek(0);
-            if (Character.isDigit(current)) TokenizeNumber();
-            else if (Character.isLetter(current)) TokenizeWord();
+            final char current = peek(0);
+            if (Character.isDigit(current)) tokenizeNumber();
+            else if (Character.isLetter(current)) tokenizeWord();
             else if (OPERATOR_CHARS.indexOf(current) != -1) {
-                TokenizeOperator();
+                tokenizeOperator();
             } else {
-                Next();
+                next();
             }
         }
 
         return tokens;
     }
 
-    private void TokenizeOperator() {
-        final int position = OPERATOR_CHARS.indexOf(Peek(0));
+    private void tokenizeOperator() {
+        final int position = OPERATOR_CHARS.indexOf(peek(0));
         addToken(OPERATOR_TOKENS[position]);
-        Next();
+        next();
     }
 
-    private void TokenizeWord() {
+    private void tokenizeWord() {
         final StringBuilder buffer = new StringBuilder();
-        char current = Peek(0);
+        char current = peek(0);
 
         while (Character.isLetterOrDigit(current) || (current == '_') || (current == '$')) {
             buffer.append(current);
-            current = Next();
+            current = next();
         }
         addToken(TokenType.WORD, buffer.toString());
     }
 
-    private void TokenizeNumber() {
+    private void tokenizeNumber() {
         final StringBuilder buffer = new StringBuilder();
-        char current = Peek(0);
+        char current = peek(0);
 
         while (true) {
             if (current == '.') {
@@ -66,17 +67,17 @@ public class Lexer {
             }
 
             buffer.append(current);
-            current = Next();
+            current = next();
         }
         addToken(TokenType.NUMBER, buffer.toString());
     }
 
-    private char Next() {
+    private char next() {
         pos++;
-        return Peek(0);
+        return peek(0);
     }
 
-    private char Peek(int relativePosition) {
+    private char peek(int relativePosition) {
         final int position = pos + relativePosition;
         if (position >= length) {
             return '\0';

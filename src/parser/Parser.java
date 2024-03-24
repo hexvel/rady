@@ -17,29 +17,45 @@ public class Parser {
         size = tokens.size();
     }
 
-    public List<Expression> Parse() {
-        final List<Expression> result = new ArrayList<>();
-        while (!Match(TokenType.EOF)) {
-            result.add(expression());
+    public List<Statement> parse() {
+        final List<Statement> result = new ArrayList<>();
+        while (!match(TokenType.EOF)) {
+            result.add(statement());
         }
 
         return result;
+    }
+
+    private Statement statement() {
+        return assignmentStatement();
+    }
+
+    private Statement assignmentStatement() {
+        // WORD EQUAL
+        final Token current = get(0);
+        if (match(TokenType.WORD) && get(0).getType() == TokenType.EQUAL) {
+            final String variable = current.getText();
+            consume(TokenType.EQUAL);
+            return new AssignmentStatement(variable, expression());
+        }
+
+        throw new RuntimeException("Unknown statement");
     }
 
     private Expression expression() {
-        return Additive();
+        return additive();
     }
 
-    private Expression Additive() {
-        Expression result = Multiplicative();
+    private Expression additive() {
+        Expression result = multiplicative();
 
         while (true) {
-            if (Match(TokenType.PLUS)) {
-                result = new BinaryExpression('+', result, Multiplicative());
+            if (match(TokenType.PLUS)) {
+                result = new BinaryExpression('+', result, multiplicative());
                 continue;
             }
-            if (Match(TokenType.MINUS)) {
-                result = new BinaryExpression('-', result, Multiplicative());
+            if (match(TokenType.MINUS)) {
+                result = new BinaryExpression('-', result, multiplicative());
                 continue;
             }
             break;
@@ -48,16 +64,16 @@ public class Parser {
         return result;
     }
 
-    private Expression Multiplicative() {
-        Expression result = Unary();
+    private Expression multiplicative() {
+        Expression result = unary();
 
         while (true) {
-            if (Match(TokenType.STAR)) {
-                result = new BinaryExpression('*', result, Unary());
+            if (match(TokenType.STAR)) {
+                result = new BinaryExpression('*', result, unary());
                 continue;
             }
-            if (Match(TokenType.SLASH)) {
-                result = new BinaryExpression('/', result, Unary());
+            if (match(TokenType.SLASH)) {
+                result = new BinaryExpression('/', result, unary());
                 continue;
             }
             break;
@@ -66,38 +82,45 @@ public class Parser {
         return result;
     }
 
-    private Expression Unary() {
-        if (Match(TokenType.MINUS)) {
-            return new UnaryExpression('-', Primary());
+    private Expression unary() {
+        if (match(TokenType.MINUS)) {
+            return new UnaryExpression('-', primary());
         }
-        return Primary();
+        return primary();
     }
 
-    private Expression Primary() {
-        final Token current = Get(0);
-        if (Match(TokenType.NUMBER)) {
+    private Expression primary() {
+        final Token current = get(0);
+        if (match(TokenType.NUMBER)) {
             return new NumberExpression(Double.parseDouble(current.getText()));
         }
-        if (Match(TokenType.WORD)) {
-            return new ConstantExpression(current.getText());
+        if (match(TokenType.WORD)) {
+            return new VariableExpression(current.getText());
         }
-        if (Match(TokenType.LBRACKET)) {
+        if (match(TokenType.LBRACKET)) {
             Expression result = expression();
-            Match(TokenType.RBRACKET);
+            match(TokenType.RBRACKET);
             return result;
         }
         throw new RuntimeException("Unknown expression");
     }
 
-    private boolean Match(TokenType type) {
-        final Token current = Get(0);
+    private Token consume(TokenType type) {
+        final Token current = get(0);
+        if (type != current.getType()) throw new RuntimeException("Token" + current + " doesn't math " + type);
+        pos++;
+        return current;
+    }
+
+    private boolean match(TokenType type) {
+        final Token current = get(0);
         if (type != current.getType()) return false;
 
         pos++;
         return true;
     }
 
-    private Token Get(int relativePosition) {
+    private Token get(int relativePosition) {
         final int position = pos + relativePosition;
         if (position >= size) {
             return EOF;

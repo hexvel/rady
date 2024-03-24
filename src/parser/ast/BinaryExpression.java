@@ -12,12 +12,12 @@ public class BinaryExpression implements Expression {
     }
 
     @Override
-    public double Eval() {
+    public double eval() {
         return switch (operation) {
-            case '-' -> expr1.Eval() - expr2.Eval();
-            case '*' -> expr1.Eval() * expr2.Eval();
-            case '/' -> expr1.Eval() / expr2.Eval();
-            default -> expr1.Eval() + expr2.Eval();
+            case '-' -> expr1.eval() - expr2.eval();
+            case '*' -> expr1.eval() * expr2.eval();
+            case '/' -> expr1.eval() / expr2.eval();
+            default -> expr1.eval() + expr2.eval();
         };
     }
 
