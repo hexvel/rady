@@ -12,5 +12,9 @@ public enum TokenType {
     LBRACKET,
     RBRACKET,
     EOF,
-    STRING
+    STRING,
+    IF,
+    ELSE,
+    LT,
+    GT
 }

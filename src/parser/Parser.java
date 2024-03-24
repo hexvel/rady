@@ -30,6 +30,9 @@ public class Parser {
         if (match(TokenType.PRINT)) {
             return new PrintStatement(expression());
         }
+        if (match(TokenType.IF)) {
+            return conditionalKeywords();
+        }
         return assignmentStatement();
     }
 
@@ -45,8 +48,44 @@ public class Parser {
         throw new RuntimeException("Unknown statement");
     }
 
+    private Statement conditionalKeywords() {
+        final Expression condition = expression();
+        final Statement ifStatement = statement();
+        final Statement elseStatement;
+
+        if (match(TokenType.ELSE)) {
+            elseStatement = statement();
+        } else {
+            elseStatement = null;
+        }
+
+        return new IfStatement(condition, ifStatement, elseStatement);
+    }
+
     private Expression expression() {
-        return additive();
+        return conditional();
+    }
+
+    private Expression conditional() {
+        Expression result = additive();
+
+        while (true) {
+            if (match(TokenType.EQUAL)) {
+                result = new ConditionalExpression('=', result, additive());
+                continue;
+            }
+            if (match(TokenType.LT)) {
+                result = new ConditionalExpression('<', result, additive());
+                continue;
+            }
+            if (match(TokenType.GT)) {
+                result = new ConditionalExpression('>', result, additive());
+                continue;
+            }
+            break;
+        }
+
+        return result;
     }
 
     private Expression additive() {
@@ -111,11 +150,10 @@ public class Parser {
         throw new RuntimeException("Unknown expression");
     }
 
-    private Token consume(TokenType type) {
+    private void consume(TokenType type) {
         final Token current = get(0);
         if (type != current.getType()) throw new RuntimeException("Token" + current + " doesn't math " + type);
         pos++;
-        return current;
     }
 
     private boolean match(TokenType type) {

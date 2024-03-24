@@ -1,2 +1,2 @@
-name = "Hexvel"
-print "Name is " + name
+if (1 < 2) print "1 меньше 2"
+else print "1 больше 2"

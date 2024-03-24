@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Lexer {
-    private static final String OPERATOR_CHARS = "+-*/()=";
+    private static final String OPERATOR_CHARS = "+-*/()=<>";
     private static final TokenType[] OPERATOR_TOKENS = {
             TokenType.PLUS, TokenType.MINUS,
             TokenType.STAR, TokenType.SLASH,
             TokenType.LBRACKET, TokenType.RBRACKET,
-            TokenType.EQUAL
+            TokenType.EQUAL, TokenType.LT, TokenType.GT
     };
 
     private final String input;
@@ -54,11 +54,20 @@ public class Lexer {
             current = next();
         }
 
-        String string = buffer.toString();
-        if (string.equals("print")) {
-            addToken(TokenType.PRINT);
-        } else {
-            addToken(TokenType.WORD, string);
+        final String string = buffer.toString();
+        switch (string) {
+            case "print" -> {
+                addToken(TokenType.PRINT);
+            }
+            case "if" -> {
+                addToken(TokenType.IF);
+            }
+            case "else" -> {
+                addToken(TokenType.ELSE);
+            }
+            default -> {
+                addToken(TokenType.WORD, string);
+            }
         }
     }
 
