@@ -1,5 +1,6 @@
 package parser.ast;
 
+import lib.Value;
 import lib.Variables;
 
 public class AssignmentStatement implements Statement {
@@ -14,7 +15,7 @@ public class AssignmentStatement implements Statement {
 
     @Override
     public void execute() {
-        final double result = expression.eval();
+        final Value result = expression.eval();
         Variables.set(variable, result);
     }
 

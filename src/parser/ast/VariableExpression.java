@@ -1,5 +1,6 @@
 package parser.ast;
 
+import lib.Value;
 import lib.Variables;
 
 public class VariableExpression implements Expression {
@@ -10,8 +11,8 @@ public class VariableExpression implements Expression {
     }
 
     @Override
-    public double eval() {
-        if (Variables.isExists(name)) throw new RuntimeException("Constant doesn't exists.");
+    public Value eval() {
+        if (!Variables.isExists(name)) throw new RuntimeException("Constant doesn't exists.");
         return Variables.getByKey(name);
     }
 

@@ -1,5 +1,7 @@
 package parser.ast;
 
+import lib.Value;
+
 public interface Expression {
-    double eval();
+    Value eval();
 }
